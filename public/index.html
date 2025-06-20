@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .task-form {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group input,
+        .form-group select {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .tasks-section {
+            padding: 30px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        .filter-tab {
+            flex: 1;
+            padding: 10px 15px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .filter-tab.active {
+            background: white;
+            color: #4facfe;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-item {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-item:hover {
+            border-color: #4facfe;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-item.completed {
+            opacity: 0.7;
+            background: #f8f9fa;
+        }
+
+        .task-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .task-checkbox.checked {
+            background: #4facfe;
+            border-color: #4facfe;
+            position: relative;
+        }
+
+        .task-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .task-title.completed {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .priority-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .priority-high {
+            background: #ffe6e6;
+            color: #d32f2f;
+        }
+
+        .priority-medium {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .priority-low {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #ff3742;
+            transform: translateY(-1px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #999;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function TaskManager() {
+            const [tasks, setTasks] = useState([]);
+            const [taskTitle, setTaskTitle] = useState('');
+            const [taskPriority, setTaskPriority] = useState('medium');
+            const [filter, setFilter] = useState('all');
+
+            const addTask = () => {
+                if (taskTitle.trim()) {
+                    const newTask = {
+                        id: Date.now(),
+                        title: taskTitle.trim(),
+                        priority: taskPriority,
+                        completed: false,
+                        createdAt: new Date().toLocaleDateString()
+                    };
+                    setTasks([...tasks, newTask]);
+                    setTaskTitle('');
+                }
+            };
+
+            const toggleTask = (id) => {
+                setTasks(tasks.map(task =>
+                    task.id === id ? { ...task, completed: !task.completed } : task
+                ));
+            };
+
+            const deleteTask = (id) => {
+                setTasks(tasks.filter(task => task.id !== id));
+            };
+
+            const filteredTasks = tasks.filter(task => {
+                if (filter === 'completed') return task.completed;
+                if (filter === 'pending') return !task.completed;
+                return true;
+            });
+
+            const stats = {
+                total: tasks.length,
+                completed: tasks.filter(t => t.completed).length,
+                pending: tasks.filter(t => !t.completed).length
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter') {
+                    addTask();
+                }
+            };
+
+            return (
+                <div className="container">
+                    <header className="header">
+                        <h1>Task Manager</h1>
+                        <p>Stay organized and boost your productivity</p>
+                    </header>
+
+                    <div className="task-form">
+                        <div className="form-group">
+                            <input
+                                type="text"
+                                placeholder="Enter your task..."
+                                value={taskTitle}
+                                onChange={(e) => setTaskTitle(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                            />
+                            <select
+                                value={taskPriority}
+                                onChange={(e) => setTaskPriority(e.target.value)}
+                            >
+                                <option value="low">Low Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="high">High Priority</option>
+                            </select>
+                            <button className="btn" onClick={addTask}>
+                                Add Task
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="tasks-section">
+                        {tasks.length > 0 && (
+                            <div className="stats">
+                                <div className="stat-item">
+                                    <div className="stat-number">{stats.total}</div>
+                                    <div className="stat-label">Total Tasks</div>
+                                </div>
+                                <div className="stat-item">
+                                    <div className="stat-number">{stats.completed}</div>
+                                    <div className="stat-label">Completed</div>
+                                </div>
+                                <div className="stat-item">
+                                    <div className="stat-number">{stats.pending}</div>
+                                    <div className="stat-label">Pending</div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="filter-tabs">
+                            <button
+                                className={`filter-tab ${filter === 'all' ? 'active' : ''}`}
+                                onClick={() => setFilter('all')}
+                            >
+                                All Tasks
+                            </button>
+                            <button
+                                className={`filter-tab ${filter === 'pending' ? 'active' : ''}`}
+                                onClick={() => setFilter('pending')}
+                            >
+                                Pending
+                            </button>
+                            <button
+                                className={`filter-tab ${filter === 'completed' ? 'active' : ''}`}
+                                onClick={() => setFilter('completed')}
+                            >
+                                Completed
+                            </button>
+                        </div>
+
+                        {filteredTasks.length === 0 ? (
+                            <div className="empty-state">
+                                <h3>No tasks found</h3>
+                                <p>
+                                    {filter === 'all'
+                                        ? "Add your first task to get started!"
+                                        : `No ${filter} tasks at the moment.`
+                                    }
+                                </p>
+                            </div>
+                        ) : (
+                            filteredTasks.map(task => (
+                                <div key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
+                                    <div className="task-content">
+                                        <div
+                                            className={`task-checkbox ${task.completed ? 'checked' : ''}`}
+                                            onClick={() => toggleTask(task.id)}
+                                        ></div>
+                                        <div className="task-info">
+                                            <div className={`task-title ${task.completed ? 'completed' : ''}`}>
+                                                {task.title}
+                                            </div>
+                                            <div className="task-meta">
+                                                <span className={`priority-badge priority-${task.priority}`}>
+                                                    {task.priority}
+                                                </span>
+                                                <span>Created: {task.createdAt}</span>
+                                            </div>
+                                        </div>
+                                        <div className="task-actions">
+                                            <button
+                                                className="btn-small btn-delete"
+                                                onClick={() => deleteTask(task.id)}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<TaskManager />, document.getElementById('root'));
+    </script>
+</body>
+
+</html>
